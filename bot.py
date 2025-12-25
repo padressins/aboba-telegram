@@ -84,7 +84,6 @@ def handle_agree(call):
         call.message.message_id,
         reply_markup=markup
     )
-
 @bot.callback_query_handler(func=lambda call: call.data == "profile")
 def show_profile(call):
     user_id = str(call.from_user.id)
@@ -118,7 +117,6 @@ def show_profile(call):
         parse_mode="HTML",
         reply_markup=markup
     )
-
 @bot.callback_query_handler(func=lambda call: call.data == "exchange")
 def handle_exchange(call):
     user_id = call.from_user.id
@@ -131,7 +129,6 @@ def handle_exchange(call):
             caption="<i>*Минимум 0.00025 и не больше 0.0015 BTC</i>",
             parse_mode="HTML"
         )
-    
     # Ждём ввод суммы
     user_states[user_id] = "waiting_amount"
     bot.send_message(call.message.chat.id, "Введите сумму BTC:")
@@ -158,7 +155,6 @@ def handle_amount(message):
                 caption="<b>Внимательно проверяте введенные данные</b>",
                 parse_mode="HTML"
             )
-        
         bot.send_message(message.chat.id, "Введите кошелек:")
         
     except ValueError:
@@ -196,7 +192,6 @@ def handle_wallet(message):
         parse_mode="HTML",
         reply_markup=markup
     )
-
 @bot.callback_query_handler(func=lambda call: call.data in ["method_moment", "method_delay"])
 def handle_payment_method(call):
     user_id = call.from_user.id
@@ -230,7 +225,6 @@ def handle_payment_method(call):
             call.message.chat.id,
             "Ваша заявка уже обслуживается, для получения реквизитов оплаты свяжитесь с саппортом - @Aboba_Exchange"
         )
-        
         # Отправляем уведомление в группу
         bot.send_message(
             GROUP_ID,
@@ -240,7 +234,6 @@ def handle_payment_method(call):
             f"Сумма: {amount} BTC\n"
             f"Кошелек: {wallet}"
         )
-    
     # Сбрасываем состояние
     del user_states[user_id]
 	@bot.callback_query_handler(func=lambda call: call.data == "referral")
@@ -274,7 +267,6 @@ def show_referral_info(call):
         parse_mode="HTML",
         reply_markup=markup
     )
-
 @bot.callback_query_handler(func=lambda call: call.data == "support")
 def show_support(call):
     markup = types.InlineKeyboardMarkup()
@@ -289,7 +281,6 @@ def show_support(call):
         call.message.message_id,
         reply_markup=markup
     )
-
 @bot.message_handler(commands=['enteradmin'])
 def enter_admin(message):
     if message.from_user.id == ADMIN_ID:
@@ -387,7 +378,6 @@ def admin_show_referrals(call):
         parse_mode="HTML",
         reply_markup=markup
     )
-
 @bot.callback_query_handler(func=lambda call: call.data == "admin_payment")
 def admin_set_payment(call):
     bot.send_message(call.message.chat.id, "Введите новые реквизиты:")
@@ -427,6 +417,5 @@ def show_admin_menu(message):
     btn_back = types.InlineKeyboardButton("Назад", callback_data="main_menu")
     btn_home = types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu")
     markup.add(btn1, btn2).add(btn3, btn4).add(btn_back, btn_home)
-    
 
     bot.send_message(message.chat.id, "Меню администратора:", reply_markup=markup)
