@@ -12,7 +12,20 @@ os.makedirs('data', exist_ok=True)
 BOT_TOKEN = os.getenv("8469702127:AAGXk3qjK42rEEj-AjTsmNfkp8l_hK7zn-M")
 ADMIN_ID = 844810573  # Твой ID
 GROUP_ID = -1003636379042  # ID группы саппорта
-WEBHOOK_URL = os.getenv("https://aboba-telegram-1.onrender.com")
+# В начале файла, рядом с другими настройками:
+WEBHOOK_HOST = os.getenv("RENDER_EXTERNAL_HOST", "your-service-name.onrender.com")
+WEBHOOK_PATH = "/webhook"
+WEBHOOK_URL = f"https://{WEBHOOK_HOST}{WEBHOOK_PATH}"
+
+# В конце файла (перед запуском):
+if __name__ == '__main__':
+    # Устанавливаем webhook при запуске
+    bot.remove_webhook()
+    bot.set_webhook(url=WEBHOOK_URL)
+    
+    # Запускаем Flask сервер
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
 
 bot = telebot.TeleBot("8469702127:AAGXk3qjK42rEEj-AjTsmNfkp8l_hK7zn-M", threaded=False)
 app = Flask(__name__)
@@ -455,10 +468,11 @@ def health_check():
 if __name__ == '__main__':
     # Устанавливаем webhook при запуске
     bot.remove_webhook()
-    bot.set_webhook(url=f"{WEBHOOK_URL}/webhook")
+    bot.set_webhook(url=WEBHOOK_URL)
     
     # Запускаем Flask сервер
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+
 
 
