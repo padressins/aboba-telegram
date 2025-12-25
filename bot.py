@@ -14,7 +14,7 @@ ADMIN_ID = 844810573  # Твой ID
 GROUP_ID = -1003636379042  # ID группы саппорта
 WEBHOOK_URL = os.getenv("https://aboba-telegram-1.onrender.com")
 
-bot = telebot.TeleBot(8469702127:AAGXk3qjK42rEEj-AjTsmNfkp8l_hK7zn-M, threaded=False)
+bot = telebot.TeleBot("8469702127:AAGXk3qjK42rEEj-AjTsmNfkp8l_hK7zn-M", threaded=False)
 app = Flask(__name__)
 
 # === ФАЙЛЫ ===
@@ -460,4 +460,5 @@ if __name__ == '__main__':
     # Запускаем Flask сервер
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+
 
