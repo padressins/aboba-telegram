@@ -11,10 +11,10 @@ GROUP_ID = -1003636379042  # ID группы саппорта
 bot = telebot.TeleBot("8469702127:AAGXk3qjK42rEEj-AjTsmNfkp8l_hK7zn-M")
 
 # === ФАЙЛЫ ===
-USERS_FILE = "data/users.json"
-RATES_FILE = "data/rates.json"
-REFERRALS_FILE = "data/referrals.json"
-PAYMENT_FILE = "data/payment.txt"
+USERS_FILE = os.path.join("data", "users.json")
+RATES_FILE = os.path.join("data", "rates.json")
+REFERRALS_FILE = os.path.join("data", "referrals.json")
+PAYMENT_FILE = os.path.join("data", "payment.txt")
 
 # === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
 admin_sessions = set()
@@ -420,5 +420,6 @@ def back_to_main_menu(call):
 
 if __name__ == '__main__':
     bot.infinity_polling()
+
 
 
