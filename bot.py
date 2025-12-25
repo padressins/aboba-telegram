@@ -3,12 +3,19 @@ from telebot import types
 import json
 import os
 from datetime import datetime
+from flask import Flask, request, jsonify
+
+# === СОЗДАЁМ ПАПКУ DATA ЕСЛИ ЕЁ НЕТ ===
+os.makedirs('data', exist_ok=True)
 
 # === НАСТРОЙКИ ===
 BOT_TOKEN = os.getenv("8469702127:AAGXk3qjK42rEEj-AjTsmNfkp8l_hK7zn-M")
 ADMIN_ID = 844810573  # Твой ID
 GROUP_ID = -1003636379042  # ID группы саппорта
-bot = telebot.TeleBot("8469702127:AAGXk3qjK42rEEj-AjTsmNfkp8l_hK7zn-M")
+WEBHOOK_URL = os.getenv("https://aboba-telegram.onrender.com")
+
+bot = telebot.TeleBot(BOT_TOKEN, threaded=False)
+app = Flask(__name__)
 
 # === ФАЙЛЫ ===
 USERS_FILE = os.path.join("data", "users.json")
@@ -31,8 +38,15 @@ def save_json(file, data):
     with open(file, "w") as f:
         json.dump(data, f, indent=2)
 
-# === ОСНОВНОЙ КОД ===
+# === ИНИЦИАЛИЗАЦИЯ ФАЙЛОВ ===
+if not os.path.exists(RATES_FILE):
+    save_json(RATES_FILE, {"BTC": 7000000})
 
+if not os.path.exists(PAYMENT_FILE):
+    with open(PAYMENT_FILE, "w") as f:
+        f.write("Реквизиты: Сбербанк 1234...")
+
+# === ФУНКЦИИ БОТА ===
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.from_user.id
@@ -128,13 +142,16 @@ def handle_exchange(call):
     user_id = call.from_user.id
     
     # Показываем фото и сообщение
-    with open("images/btc.jpg", "rb") as photo:
-        bot.send_photo(
-            call.message.chat.id,
-            photo,
-            caption="<i>*Минимум 0.00025 и не больше 0.0015 BTC</i>",
-            parse_mode="HTML"
-        )
+    try:
+        with open("images/btc.jpg", "rb") as photo:
+            bot.send_photo(
+                call.message.chat.id,
+                photo,
+                caption="<i>*Минимум 0.00025 и не больше 0.0015 BTC</i>",
+                parse_mode="HTML"
+            )
+    except:
+        bot.send_message(call.message.chat.id, "<i>*Минимум 0.00025 и не больше 0.0015 BTC</i>", parse_mode="HTML")
     
     # Ждём ввод суммы
     user_states[user_id] = "waiting_amount"
@@ -155,13 +172,16 @@ def handle_amount(message):
         user_states[message.from_user.id] = {"state": "waiting_wallet", "amount": amount}
         
         # Показываем фото кошелька
-        with open("images/wallet.jpg", "rb") as photo:
-            bot.send_photo(
-                message.chat.id,
-                photo,
-                caption="<b>Внимательно проверяте введенные данные</b>",
-                parse_mode="HTML"
-            )
+        try:
+            with open("images/wallet.jpg", "rb") as photo:
+                bot.send_photo(
+                    message.chat.id,
+                    photo,
+                    caption="<b>Внимательно проверяте введенные данные</b>",
+                    parse_mode="HTML"
+                )
+        except:
+            bot.send_message(message.chat.id, "<b>Внимательно проверяте введенные данные</b>", parse_mode="HTML")
         
         bot.send_message(message.chat.id, "Введите кошелек:")
         
@@ -418,8 +438,25 @@ def back_to_main_menu(call):
         reply_markup=markup
     )
 
+# === WEBHOOK ===
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return 'OK', 200
+    return 'Bad Request', 400
+
+@app.route('/')
+def health_check():
+    return 'Bot is running', 200
+
 if __name__ == '__main__':
-    bot.infinity_polling()
-
-
-
+    # Устанавливаем webhook при запуске
+    bot.remove_webhook()
+    bot.set_webhook(url=f"{WEBHOOK_URL}/webhook")
+    
+    # Запускаем Flask сервер
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
