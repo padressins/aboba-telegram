@@ -8,7 +8,7 @@ from datetime import datetime
 BOT_TOKEN = os.getenv("8469702127:AAGXk3qjK42rEEj-AjTsmNfkp8l_hK7zn-M")
 ADMIN_ID = 844810573  # Твой ID
 GROUP_ID = -1003636379042  # ID группы саппорта
-bot = telebot.TeleBot("8469702127:AAGXk3qjK42rEEj-AjTsmNfkp81_hK7zn-M")
+bot = telebot.TeleBot("8469702127:AAGXk3qjK42rEEj-AjTsmNfkp8l_hK7zn-M")
 
 # === ФАЙЛЫ ===
 USERS_FILE = "data/users.json"
@@ -31,6 +31,8 @@ def save_json(file, data):
     with open(file, "w") as f:
         json.dump(data, f, indent=2)
 
+# === ОСНОВНОЙ КОД ===
+
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.from_user.id
@@ -49,7 +51,7 @@ def start(message):
     if str(user_id) not in users:
         users[str(user_id)] = {
             "username": username,
-            "ref_by": ref_id,  # ← сохраняем реферала
+            "ref_by": ref_id,
             "transactions": [],
             "created_at": datetime.now().isoformat()
         }
@@ -58,7 +60,7 @@ def start(message):
     # Показываем соглашение
     markup = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton("Согласен, перейти в бота", callback_data="agree")
-    btn2 = types.InlineKeyboardButton("Пользовательское соглашение", url="https://telegra.ph/Ps")  # ← сюда добавишь ссылку
+    btn2 = types.InlineKeyboardButton("Пользовательское соглашение", url="https://telegra.ph/Ps")
     markup.add(btn1, btn2)
     
     bot.send_message(
@@ -66,7 +68,9 @@ def start(message):
         "Дальнейшие действия в боте будут подтверждать, что <b>Вы полностью ознакомились с правилами сервиса:</b>",
         parse_mode="HTML",
         reply_markup=markup
-    )@bot.callback_query_handler(func=lambda call: call.data == "agree")
+    )
+
+@bot.callback_query_handler(func=lambda call: call.data == "agree")
 def handle_agree(call):
     user_id = call.from_user.id
     
@@ -84,6 +88,7 @@ def handle_agree(call):
         call.message.message_id,
         reply_markup=markup
     )
+
 @bot.callback_query_handler(func=lambda call: call.data == "profile")
 def show_profile(call):
     user_id = str(call.from_user.id)
@@ -117,6 +122,7 @@ def show_profile(call):
         parse_mode="HTML",
         reply_markup=markup
     )
+
 @bot.callback_query_handler(func=lambda call: call.data == "exchange")
 def handle_exchange(call):
     user_id = call.from_user.id
@@ -129,6 +135,7 @@ def handle_exchange(call):
             caption="<i>*Минимум 0.00025 и не больше 0.0015 BTC</i>",
             parse_mode="HTML"
         )
+    
     # Ждём ввод суммы
     user_states[user_id] = "waiting_amount"
     bot.send_message(call.message.chat.id, "Введите сумму BTC:")
@@ -155,6 +162,7 @@ def handle_amount(message):
                 caption="<b>Внимательно проверяте введенные данные</b>",
                 parse_mode="HTML"
             )
+        
         bot.send_message(message.chat.id, "Введите кошелек:")
         
     except ValueError:
@@ -178,7 +186,7 @@ def handle_wallet(message):
     # Показываем выбор способа
     markup = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton(f"Моментально: {round(sum_moment)} ₽", callback_data="method_moment")
-    btn2 = types.InlineKeyboardButton(f"С ожиданием реквизитов: {round(sum_delay)} ₽", callback_data="method_delay")
+    btn2 = types.InlineKeyboardButton(f"С ожиданием: {round(sum_delay)} ₽", callback_data="method_delay")
     
     bot.send_message(
         message.chat.id,
@@ -188,10 +196,11 @@ def handle_wallet(message):
         f"Внимательно проверьте введенные вами данные\n\n"
         f"Выберите способ пополнения:\n"
         f"• Моментально: {round(sum_moment)} ₽\n"
-        f"• С ожиданием реквизитов: {round(sum_delay)} ₽",
+        f"• С ожиданием: {round(sum_delay)} ₽",
         parse_mode="HTML",
         reply_markup=markup
     )
+
 @bot.callback_query_handler(func=lambda call: call.data in ["method_moment", "method_delay"])
 def handle_payment_method(call):
     user_id = call.from_user.id
@@ -212,12 +221,7 @@ def handle_payment_method(call):
         # Отправляем уведомление в группу
         bot.send_message(
             GROUP_ID,
-            f"🚨 Новый заказ:\n"
-            f"ID: {user_id}\n"
-            f"Username: @{call.from_user.username}\n"
-            f"Сумма: {amount} BTC\n"
-            f"Кошелек: {wallet}\n"
-            f"Способ: моментально"
+            f"🚨 Новый заказ:\nID: {user_id}\nUsername: @{call.from_user.username}\nСумма: {amount} BTC\nКошелек: {wallet}\nСпособ: моментально"
         )
     else:
         # Отправляем сообщение о заявке
@@ -225,19 +229,17 @@ def handle_payment_method(call):
             call.message.chat.id,
             "Ваша заявка уже обслуживается, для получения реквизитов оплаты свяжитесь с саппортом - @Aboba_Exchange"
         )
+        
         # Отправляем уведомление в группу
-bot.send_message(
-    GROUP_ID,
-    f"🚨 Новый заказ:\n"
-    f"ID: {user_id}\n"
-    f"Username: @{call.from_user.username}\n"
-    f"Сумма: {amount} BTC\n"
-    f"Кошелек: {wallet}\n"
-    f"Способ: моментально"
-)
+        bot.send_message(
+            GROUP_ID,
+            f"📝 Заявка на ожидание:\nID: {user_id}\nUsername: @{call.from_user.username}\nСумма: {amount} BTC\nКошелек: {wallet}"
+        )
+    
     # Сбрасываем состояние
     del user_states[user_id]
-	@bot.callback_query_handler(func=lambda call: call.data == "referral")
+
+@bot.callback_query_handler(func=lambda call: call.data == "referral")
 def show_referral_info(call):
     user_id = str(call.from_user.id)
     referrals = load_json(REFERRALS_FILE, {})
@@ -268,6 +270,7 @@ def show_referral_info(call):
         parse_mode="HTML",
         reply_markup=markup
     )
+
 @bot.callback_query_handler(func=lambda call: call.data == "support")
 def show_support(call):
     markup = types.InlineKeyboardMarkup()
@@ -282,6 +285,7 @@ def show_support(call):
         call.message.message_id,
         reply_markup=markup
     )
+
 @bot.message_handler(commands=['enteradmin'])
 def enter_admin(message):
     if message.from_user.id == ADMIN_ID:
@@ -302,9 +306,12 @@ def handle_password(message):
 def show_admin_menu(message):
     markup = types.InlineKeyboardMarkup()
     btn1 = types.InlineKeyboardButton("Изменить курс", callback_data="admin_rate")
+    btn2 = types.InlineKeyboardButton("Партнёры и рефералы", callback_data="admin_referrals")
+    btn3 = types.InlineKeyboardButton("Изменить реквизиты", callback_data="admin_payment")
+    btn4 = types.InlineKeyboardButton("Рассылка", callback_data="admin_broadcast")
     btn_back = types.InlineKeyboardButton("Назад", callback_data="main_menu")
     btn_home = types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu")
-    markup.add(btn1).add(btn_back, btn_home)
+    markup.add(btn1, btn2).add(btn3, btn4).add(btn_back, btn_home)
     
     bot.send_message(message.chat.id, "Меню администратора:", reply_markup=markup)
 
@@ -324,22 +331,7 @@ def handle_new_rate(message):
     except ValueError:
         bot.reply_to(message, "Введите число")
 
-@bot.callback_query_handler(func=lambda call: call.data == "main_menu")
-def back_to_main_menu(call):
-    markup = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton("Мой профиль", callback_data="profile")
-    btn2 = types.InlineKeyboardButton("Обмен", callback_data="exchange")
-    btn3 = types.InlineKeyboardButton("Партнёрская программа", callback_data="referral")
-    btn4 = types.InlineKeyboardButton("Техподдержка", callback_data="support")
-    markup.add(btn1, btn2).add(btn3, btn4)
-    
-    bot.edit_message_text(
-        "Выберите действие:",
-        call.message.chat.id,
-        call.message.message_id,
-        reply_markup=markup
-    )
-	@bot.callback_query_handler(func=lambda call: call.data == "admin_referrals")
+@bot.callback_query_handler(func=lambda call: call.data == "admin_referrals")
 def admin_show_referrals(call):
     referrals = load_json(REFERRALS_FILE, {})
     users = load_json(USERS_FILE, {})
@@ -379,6 +371,7 @@ def admin_show_referrals(call):
         parse_mode="HTML",
         reply_markup=markup
     )
+
 @bot.callback_query_handler(func=lambda call: call.data == "admin_payment")
 def admin_set_payment(call):
     bot.send_message(call.message.chat.id, "Введите новые реквизиты:")
@@ -409,15 +402,23 @@ def handle_broadcast_text(message):
     
     bot.reply_to(message, f"Рассылка завершена. Отправлено {success_count} пользователям.")
 
-def show_admin_menu(message):
+@bot.callback_query_handler(func=lambda call: call.data == "main_menu")
+def back_to_main_menu(call):
     markup = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton("Изменить курс", callback_data="admin_rate")
-    btn2 = types.InlineKeyboardButton("Партнёры и рефералы", callback_data="admin_referrals")
-    btn3 = types.InlineKeyboardButton("Изменить реквизиты", callback_data="admin_payment")
-    btn4 = types.InlineKeyboardButton("Рассылка", callback_data="admin_broadcast")
-    btn_back = types.InlineKeyboardButton("Назад", callback_data="main_menu")
-    btn_home = types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu")
-    markup.add(btn1, btn2).add(btn3, btn4).add(btn_back, btn_home)
+    btn1 = types.InlineKeyboardButton("Мой профиль", callback_data="profile")
+    btn2 = types.InlineKeyboardButton("Обмен", callback_data="exchange")
+    btn3 = types.InlineKeyboardButton("Партнёрская программа", callback_data="referral")
+    btn4 = types.InlineKeyboardButton("Техподдержка", callback_data="support")
+    markup.add(btn1, btn2).add(btn3, btn4)
+    
+    bot.edit_message_text(
+        "Выберите действие:",
+        call.message.chat.id,
+        call.message.message_id,
+        reply_markup=markup
+    )
 
-    bot.send_message(message.chat.id, "Меню администратора:", reply_markup=markup)
+if __name__ == '__main__':
+    bot.infinity_polling()
+
 
