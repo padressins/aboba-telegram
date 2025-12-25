@@ -226,14 +226,15 @@ def handle_payment_method(call):
             "Ваша заявка уже обслуживается, для получения реквизитов оплаты свяжитесь с саппортом - @Aboba_Exchange"
         )
         # Отправляем уведомление в группу
-        bot.send_message(
-            GROUP_ID,
-            f"🚨 Заявка на ожидание реквизитов:\n"
-            f"ID: {user_id}\n"
-            f"Username: @{call.from_user.username}\n"
-            f"Сумма: {amount} BTC\n"
-            f"Кошелек: {wallet}"
-        )
+bot.send_message(
+    GROUP_ID,
+    f"🚨 Новый заказ:\n"
+    f"ID: {user_id}\n"
+    f"Username: @{call.from_user.username}\n"
+    f"Сумма: {amount} BTC\n"
+    f"Кошелек: {wallet}\n"
+    f"Способ: моментально"
+)
     # Сбрасываем состояние
     del user_states[user_id]
 	@bot.callback_query_handler(func=lambda call: call.data == "referral")
@@ -419,3 +420,4 @@ def show_admin_menu(message):
     markup.add(btn1, btn2).add(btn3, btn4).add(btn_back, btn_home)
 
     bot.send_message(message.chat.id, "Меню администратора:", reply_markup=markup)
+
