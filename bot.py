@@ -8,7 +8,7 @@ from datetime import datetime
 BOT_TOKEN = os.getenv("8469702127:AAGXk3qjK42rEEj-AjTsmNfkp8l_hK7zn-M")
 ADMIN_ID = 844810573  # Твой ID
 GROUP_ID = -1003636379042  # ID группы саппорта
-bot = telebot.TeleBot(8469702127:AAGXk3qjK42rEEj-AjTsmNfkp8l_hK7zn-M)
+bot = telebot.TeleBot("8469702127:AAGXk3qjK42rEEj-AjTsmNfkp81_hK7zn-M")
 
 # === ФАЙЛЫ ===
 USERS_FILE = "data/users.json"
@@ -428,4 +428,5 @@ def show_admin_menu(message):
     btn_home = types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu")
     markup.add(btn1, btn2).add(btn3, btn4).add(btn_back, btn_home)
     
+
     bot.send_message(message.chat.id, "Меню администратора:", reply_markup=markup)
